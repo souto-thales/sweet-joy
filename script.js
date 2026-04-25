@@ -118,6 +118,9 @@
           </div>
         </article>
       `).join("");
+      if (document.documentElement.lang === "pt") {
+        grid.querySelectorAll("[data-en]").forEach(el => { if (el.dataset.pt) el.textContent = el.dataset.pt; });
+      }
 
       grid.addEventListener("click", e => {
         const btn = e.target.closest("[data-action='order-sweet']");
@@ -297,7 +300,8 @@
         getForm().reset();
         showConditionals();
         statusEl.scrollIntoView({ behavior: "smooth", block: "center" });
-      } catch {
+      } catch (err) {
+        console.error("Order form submission error:", err);
         statusEl.hidden = false;
         statusEl.className = "form-status is-error";
         statusEl.textContent = tr(
@@ -440,9 +444,6 @@
 
     return { init };
   })();
-
-  // Expose DOCINHOS for other modules
-  window.__SJ__ = { DOCINHOS };
 
   // ---------- INIT ----------
   document.addEventListener("DOMContentLoaded", () => {
