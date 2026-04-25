@@ -406,6 +406,41 @@
     return { init, applyLang };
   })();
 
+  // ---------- UTILS ----------
+  const utils = (() => {
+    function backToTop() {
+      const btn = document.getElementById("backToTop");
+      if (!btn) return;
+      window.addEventListener("scroll", () => {
+        btn.classList.toggle("is-visible", window.scrollY > 400);
+      }, { passive: true });
+      btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    }
+
+    function mobileNav() {
+      const burger = document.getElementById("navBurger");
+      const nav = document.querySelector(".site-nav");
+      if (!burger || !nav) return;
+      burger.addEventListener("click", () => {
+        const open = nav.classList.toggle("is-open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+      nav.addEventListener("click", e => {
+        if (e.target.tagName === "A") {
+          nav.classList.remove("is-open");
+          burger.setAttribute("aria-expanded", "false");
+        }
+      });
+    }
+
+    function init() {
+      backToTop();
+      mobileNav();
+    }
+
+    return { init };
+  })();
+
   // Expose DOCINHOS for other modules
   window.__SJ__ = { DOCINHOS };
 
@@ -417,5 +452,6 @@
     docinhosGrid.render();
     formHandler.bind();
     scrollReveal.init();
+    utils.init();
   });
 })();
