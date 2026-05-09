@@ -15,10 +15,10 @@
     { en: "Churros Brigadeiro",                    pt: "Brigadeiro de churros",                  price: 90,  img: "assets/images/gourmet sweets/churros.jpg" },
     { en: "Passion Fruit Brigadeiro",              pt: "Brigadeiro de maracujá",                 price: 90,  img: "assets/images/gourmet sweets/passion-fruit.jpg" },
     { en: "Salted Caramel Brigadeiro",             pt: "Brigadeiro de caramelo salgado",         price: 90,  img: "assets/images/gourmet sweets/salted-caramel.jpg" },
-    { en: "Walnut Brigadeiro",                     pt: "Brigadeiro de nozes",                    price: 100, img: null },
+    { en: "Walnut Brigadeiro",                     pt: "Brigadeiro de nozes",                    price: 100, img: "assets/images/gourmet sweets/wallnut.jpg" },
     { en: "Pistachio Brigadeiro",                  pt: "Brigadeiro de Pistache",                 price: 100, img: "assets/images/gourmet sweets/pistachio.jpg" },
     { en: "Grape Surprise",                        pt: "Surpresa de uva",                        price: 100, img: "assets/images/gourmet sweets/grape-surprise.jpg" },
-    { en: "Alcoholic Brigadeiro",                  pt: "Brigadeiro alcoólico",                   price: 100, img: null },
+    { en: "Alcoholic Brigadeiro",                  pt: "Brigadeiro alcoólico",                   price: 100, img: "assets/images/gourmet sweets/alcoholic-brigadeiro.jpg" },
     { en: "Chocolate Cups w/ Filling",             pt: "Copinhos de chocolate com recheio",      price: 100, img: "assets/images/gourmet sweets/chocolate-cups.jpg" }
   ];
 
