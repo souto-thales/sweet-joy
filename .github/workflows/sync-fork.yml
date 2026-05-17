@@ -21,3 +21,7 @@ jobs:
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/MarcosSulevis/sweet-joy/merge-upstream \
             -d '{"branch":"main"}'
+
+      - name: Trigger Cloudflare deploy
+        run: |
+          curl -X POST "${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}"
