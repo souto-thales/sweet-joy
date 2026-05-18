@@ -104,6 +104,8 @@ section { padding-block: var(--space-5); }
 .field--error input, .field--error select, .field--error textarea { border-color: var(--color-error); }
 .field-error { display: none; font-size: 0.82rem; color: var(--color-error); margin-top: 0.1rem; }
 .field--error .field-error { display: block; }
+.field-hint { font-size: 0.82rem; color: var(--color-accent); opacity: 0.65; margin-top: 0.35rem; }
+.field input[type="file"] { padding: 0.55rem 0.75rem; cursor: pointer; background: var(--color-white); }
 
 /* Accessibility */
 :focus-visible { outline: 2px solid var(--color-coral); outline-offset: 3px; border-radius: var(--radius-sm); }
