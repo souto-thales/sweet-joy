@@ -5,10 +5,17 @@ Static bilingual (EN/PT-BR) website for **Sweet & Joy by Vanessa Sulevis** — a
 
 ## Tech Stack
 - **Frontend:** Vanilla HTML + CSS + JS (no frameworks)
-- **Form backend:** Web3Forms (no backend required)
-- **Instagram feed:** Behold.so widget embed
-- **Deployment:** Cloudflare Pages (static, no build step)
-- **Fonts:** Google Fonts only
+- **Form backend:** Web3Forms (key: `5de06771-2e3a-4aa5-9f1a-094124a0595f`)
+- **Instagram feed:** Behold.so widget (feed-id: `X3KV2gcvdmljs6adDASa`)
+- **Deployment:** Cloudflare Pages via MarcosSulevis/sweet-joy (auto-deploy on push)
+- **Live URL:** https://sweetjoycakes.com
+- **Fonts:** Google Fonts only (Cormorant Garamond + Outfit + Style Script)
+
+## Git Setup
+Two remotes, single push:
+- `origin` → souto-thales/sweet-joy (source of truth)
+- `origin` push also goes to → MarcosSulevis/sweet-joy (Cloudflare Pages deploy target)
+- `git push` deploys to both automatically
 
 ## File Structure
 ```
@@ -18,19 +25,16 @@ Static bilingual (EN/PT-BR) website for **Sweet & Joy by Vanessa Sulevis** — a
 ├── index.html
 ├── style.css
 ├── script.js
+├── sitemap.xml
 └── assets/
-    ├── logo-simplified.jpeg
-    ├── logo-full.jpeg
-    ├── business-card.jpeg
-    └── images/         ← product photo placeholders
-└── References/
-    ├── Informações básicas
-    ├── Business Card.jpeg
-    ├── Logo.jpeg
-    ├── Logo Simplified.jpeg
-    ├── Docinhos Gourmet.jpeg
-    ├── How to order.jpeg
-    └── How to order in PT-BR.jpeg
+    └── images/
+        ├── cake1.jpeg … cake13.jpeg   ← hero carousel
+        ├── founder.jpg                ← Vanessa photo (About section)
+        ├── logo.png
+        ├── logo-simplified.png
+        ├── logo-simplified-white.png
+        └── gourmet sweets/            ← 17 flavor photos for docinhos grid
+└── References/                        ← brand assets, not served
 ```
 
 ## Design Tokens
@@ -55,35 +59,10 @@ Typography: elegant script display + refined sans-serif. NO Inter, NO Roboto, NO
 - **Brevity:** Keep chat responses focused on "Task X complete."
 - **Bilingual:** Every text node must have `data-en` and `data-pt` attributes — no hardcoded strings without both languages.
 - **Mobile-first:** All CSS starts from mobile breakpoint up.
-- **Placeholders:** All image slots must have descriptive `class` and `alt` attributes for easy swap later.
 
 ## 🎨 Design Rules
-- Read `/mnt/skills/public/frontend-design/SKILL.md` before writing any CSS.
 - Aesthetic target: **Soft Luxury Editorial** — high-end patisserie feel.
-- Signature detail: grain texture overlay on hero + SVG hand-drawn dividers between sections.
 - NEVER use generic bakery templates, purple gradients, or clipart aesthetics.
-
-## ⚙️ Superpowers Protocol
-- **Planning phase:** Use **Opus** — architecture, design direction, component structure
-- **Implementation phase:** Use **Sonnet** — all code generation and iteration
-- Always present the plan and wait for user approval before switching to Sonnet
-
-## 📅 Milestone Protocol (The /compact Rule)
-At the end of every major Task, stop and prompt the user:
-> *"Task [X] is verified. Please run `/compact` now to optimize tokens before we proceed."*
-
-## Suggested Task Breakdown
-| Task | Scope |
-|---|---|
-| Task 1 | HTML structure + all sections scaffolded, bilingual attributes in place |
-| Task 2 | CSS — design tokens, typography, layout, mobile-first responsive |
-| Task 3 | Hero animations + scroll-reveal (IntersectionObserver) |
-| Task 4 | How to Order interactive selector (JS state + form pre-population) |
-| Task 5 | Order Form — Web3Forms integration, validation, conditional fields |
-| Task 6 | Language toggle (EN/PT-BR switch + localStorage) |
-| Task 7 | WhatsApp float button + Back to Top + final polish |
-| Task 8 | Behold.so placeholder + Instagram section |
-| Task 9 | Cross-browser QA, performance check, Cloudflare Pages deploy test |
 
 ## Key References
 | Item | Value |
@@ -92,12 +71,28 @@ At the end of every major Task, stop and prompt the user:
 | WhatsApp link | https://wa.me/13369891342 |
 | Email | vanessa.sulevis@gmail.com |
 | Instagram | https://www.instagram.com/sweetjoync/ |
-| Web3Forms key | PLACEHOLDER — register at web3forms.com |
-| Behold.so | PLACEHOLDER — register at behold.so, connect @sweetjoync |
+| Facebook | https://www.facebook.com/profile.php?id=61582126022768 |
+| Web3Forms key | `5de06771-2e3a-4aa5-9f1a-094124a0595f` |
+| Behold.so feed ID | `X3KV2gcvdmljs6adDASa` |
 
-## Current Status
-- [x] Brand brief complete
-- [x] Product data complete (cakes + docinhos)
-- [x] Reference assets in `/References/`
-- [x] Build spec: `SWEET_JOY_SITE_PROMPT.md`
-- [ ] Site implementation — not started
+## Current Status — Site is LIVE
+
+### Done
+- [x] Full site live at sweetjoycakes.com
+- [x] Hero carousel (13 cake photos)
+- [x] About section (founder.jpg)
+- [x] Cakes portfolio section
+- [x] Docinhos grid — 17 flavors, JS-rendered, real photos
+- [x] How to Order interactive flow (JS state machine)
+- [x] Order form — Web3Forms, validation, file upload for design references
+- [x] Real Google reviews (Yuka Wakabayashi, Luciane Azevedo, Isabela Trimentose)
+- [x] Instagram feed (Behold.so embed)
+- [x] FAQ section
+- [x] Language toggle EN/PT-BR (localStorage)
+- [x] WhatsApp float button + Back to Top
+- [x] SEO: canonical URL, sitemap.xml, JSON-LD, OG/Twitter tags (cake photo)
+- [x] Deployed — Cloudflare Pages auto-deploys from MarcosSulevis/sweet-joy
+
+### Pending (requires Vanessa's action)
+- [ ] **Google Business Profile GPS** — registered coordinates are in the Pacific Ocean; fix by editing location pin at business.google.com → the Google Maps embed on the site will auto-correct once saved
+- [ ] **Google Search Console** — Vanessa needs to provide HTML meta verification code; uncomment the placeholder in `index.html` line ~11 and push
