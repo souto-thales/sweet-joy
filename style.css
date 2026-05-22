@@ -369,3 +369,39 @@ section { padding-block: var(--space-5); }
 @keyframes heroFadeUp {
   to { opacity: 1; transform: none; }
 }
+
+/* ===== VACATION BANNER ===== */
+#vacation-banner {
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.65rem var(--space-2);
+}
+.vacation-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.vacation-banner-inner p { flex: 1 1 200px; }
+.vacation-banner-inner a {
+  color: var(--color-white);
+  font-weight: 600;
+  text-decoration: underline;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== VACATION FORM NOTICE ===== */
+.vacation-form-notice {
+  background: #fdf0ef;
+  color: #8b3a35;
+  border-left: 3px solid var(--color-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}

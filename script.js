@@ -506,6 +506,50 @@
     return { init };
   })();
 
+  // ---------- VACATION MODE ----------
+  const vacationMode = (() => {
+    function fmtDate(dateStr) {
+      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    }
+
+    async function init() {
+      try {
+        const res = await fetch("/api/vacation");
+        const data = await res.json();
+        if (!data.vacationMode) return;
+
+        const today = new Date().toISOString().split("T")[0];
+        if (today < data.startDate || today > data.endDate) return;
+
+        const lang = document.documentElement.lang;
+        const endFmt = fmtDate(data.endDate);
+
+        const banner = document.getElementById("vacation-banner");
+        const bannerMsg = document.getElementById("vacation-banner-msg");
+        if (banner && bannerMsg) {
+          bannerMsg.textContent = lang === "pt"
+            ? `Estou de férias e volto em ${endFmt}. ${data.message || ""}`
+            : `I'm on vacation and back ${endFmt}. ${data.message || ""}`;
+          banner.hidden = false;
+        }
+
+        const form = document.querySelector("#order-form form");
+        if (form) {
+          const notice = document.createElement("div");
+          notice.className = "vacation-form-notice";
+          notice.textContent = lang === "pt"
+            ? `Estou de férias até ${endFmt}. Você ainda pode enviar sua mensagem — retornarei assim que voltar!`
+            : `I'm on vacation until ${endFmt}. You can still send your request — I'll reply as soon as I'm back!`;
+          form.prepend(notice);
+        }
+      } catch {
+        // Fail silently — don't break the site if the API is unavailable
+      }
+    }
+
+    return { init };
+  })();
+
   // ---------- INIT ----------
   document.addEventListener("DOMContentLoaded", () => {
     i18n.init();
@@ -516,5 +560,6 @@
     heroCarousel.init();
     scrollReveal.init();
     utils.init();
+    vacationMode.init();
   });
 })();
