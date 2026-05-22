@@ -1,23 +1,20 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "sweet-joy",
-  "compatibility_date": "2026-04-26",
-  "observability": {
-    "enabled": true
-  },
-  "assets": {
-    "directory": "."
-  },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "kv_namespaces": [
-    {
-      // Run: npx wrangler kv namespace create VACATION_CONFIG
-      // Then replace both IDs below with the output
-      "binding": "VACATION_CONFIG",
-      "id": "REPLACE_WITH_KV_NAMESPACE_ID",
-      "preview_id": "REPLACE_WITH_KV_PREVIEW_ID"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "sweet-joy",
+	"compatibility_date": "2026-04-26",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		"directory": "."
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"kv_namespaces": [
+		{
+			"binding": "VACATION_CONFIG",
+			"id": "24cc5fddfb594b85aa1dedea8ac6fad8"
+		}
+	]
 }
