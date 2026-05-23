@@ -8,3 +8,9 @@ node_modules/
 .env.local
 wrangler.jsonc
 worker.js
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
