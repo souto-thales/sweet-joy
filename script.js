@@ -519,17 +519,28 @@
         if (!data.vacationMode) return;
 
         const today = new Date().toISOString().split("T")[0];
-        if (today < data.startDate || today > data.endDate) return;
+        if (today > data.endDate) return;
 
         const lang = document.documentElement.lang;
+        const startFmt = fmtDate(data.startDate);
         const endFmt = fmtDate(data.endDate);
+        const daysUntil = Math.ceil((new Date(data.startDate + "T00:00:00") - new Date(today + "T00:00:00")) / 86400000);
+        const isAway = today >= data.startDate;
 
         const banner = document.getElementById("vacation-banner");
         const bannerMsg = document.getElementById("vacation-banner-msg");
         if (banner && bannerMsg) {
-          bannerMsg.textContent = lang === "pt"
-            ? `Estou de férias e volto em ${endFmt}. ${data.message || ""}`
-            : `I'm on vacation and back ${endFmt}. ${data.message || ""}`;
+          if (isAway) {
+            bannerMsg.textContent = lang === "pt"
+              ? `Estou de férias e volto em ${endFmt}. ${data.message || ""}`
+              : `I'm on vacation and back ${endFmt}. ${data.message || ""}`;
+          } else if (daysUntil <= 10) {
+            bannerMsg.textContent = lang === "pt"
+              ? `Atenção: estarei de férias de ${startFmt} a ${endFmt}. Faça seu pedido antes!`
+              : `Heads up: I'll be on vacation from ${startFmt} to ${endFmt}. Place your order before then!`;
+          } else {
+            return;
+          }
           banner.hidden = false;
         }
 
@@ -537,9 +548,13 @@
         if (form) {
           const notice = document.createElement("div");
           notice.className = "vacation-form-notice";
-          notice.textContent = lang === "pt"
-            ? `Estou de férias até ${endFmt}. Você ainda pode enviar sua mensagem — retornarei assim que voltar!`
-            : `I'm on vacation until ${endFmt}. You can still send your request — I'll reply as soon as I'm back!`;
+          notice.textContent = isAway
+            ? (lang === "pt"
+                ? `Estou de férias até ${endFmt}. Você ainda pode enviar sua mensagem — retornarei assim que voltar!`
+                : `I'm on vacation until ${endFmt}. You can still send your request — I'll reply as soon as I'm back!`)
+            : (lang === "pt"
+                ? `Estarei de férias de ${startFmt} a ${endFmt}. Pedidos feitos agora serão respondidos após meu retorno.`
+                : `I'll be on vacation from ${startFmt} to ${endFmt}. Orders placed now will be answered after I return.`);
           form.prepend(notice);
         }
       } catch {
