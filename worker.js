@@ -1,19 +1,38 @@
+const ALLOWED_ORIGIN = 'https://sweetjoycakes.com';
+
+const CORS = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+function cors(body, init = {}) {
+  const res = body instanceof Response ? body : Response.json(body, init);
+  Object.entries(CORS).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
+}
+
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
     const method = request.method;
 
+    // Preflight
+    if (method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS });
+    }
+
     if (pathname === '/api/health') {
-      return Response.json({ ok: true, worker: 'sweet-joy' });
+      return cors({ ok: true, worker: 'sweet-joy' });
     }
     if (pathname === '/api/vacation' && method === 'GET') {
-      return getVacation(env);
+      return cors(await getVacation(env));
     }
     if (pathname === '/api/admin/login' && method === 'POST') {
-      return adminLogin(request, env);
+      return cors(await adminLogin(request, env));
     }
     if (pathname === '/api/admin/vacation' && method === 'POST') {
-      return adminVacation(request, env);
+      return cors(await adminVacation(request, env));
     }
 
     return env.ASSETS.fetch(request);

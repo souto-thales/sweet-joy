@@ -212,6 +212,8 @@
   const TOKEN_KEY = 'sj.admin.token';
   let isActive = false;
 
+  const API = 'https://sweet-joy.thalessouto.workers.dev';
+
   // ---- AUTH ----
 
   function getToken() {
@@ -234,7 +236,7 @@
 
     setLoading('loginBtn', true, 'Signing in…');
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(`${API}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -269,7 +271,7 @@
 
   async function loadStatus() {
     try {
-      const res = await fetch('/api/vacation');
+      const res = await fetch(`${API}/api/vacation`);
       const data = await res.json();
       isActive = !!data.vacationMode;
       renderStatus(data);
@@ -334,7 +336,7 @@
 
   async function postVacation(body) {
     try {
-      const res = await fetch('/api/admin/vacation', {
+      const res = await fetch(`${API}/api/admin/vacation`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

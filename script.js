@@ -514,7 +514,7 @@
 
     async function init() {
       try {
-        const res = await fetch("/api/vacation");
+        const res = await fetch("https://sweet-joy.thalessouto.workers.dev/api/vacation");
         const data = await res.json();
         if (!data.vacationMode) return;
 
