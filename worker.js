@@ -1,15 +1,20 @@
 const ALLOWED_ORIGIN = 'https://sweetjoycakes.com';
 
-const CORS = {
+const CORS_PUBLIC = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+};
+
+const CORS_ADMIN = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-function cors(body, init = {}) {
-  const res = body instanceof Response ? body : Response.json(body, init);
-  Object.entries(CORS).forEach(([k, v]) => res.headers.set(k, v));
-  return res;
+function withCors(response, corsHeaders) {
+  const headers = new Headers(response.headers);
+  Object.entries(corsHeaders).forEach(([k, v]) => headers.set(k, v));
+  return new Response(response.body, { status: response.status, headers });
 }
 
 export default {
@@ -17,22 +22,25 @@ export default {
     const { pathname } = new URL(request.url);
     const method = request.method;
 
-    // Preflight
     if (method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS });
+      const isAdmin = pathname.startsWith('/api/admin');
+      return new Response(null, {
+        status: 204,
+        headers: isAdmin ? CORS_ADMIN : CORS_PUBLIC,
+      });
     }
 
     if (pathname === '/api/health') {
-      return cors({ ok: true, worker: 'sweet-joy' });
+      return withCors(Response.json({ ok: true, worker: 'sweet-joy' }), CORS_PUBLIC);
     }
     if (pathname === '/api/vacation' && method === 'GET') {
-      return cors(await getVacation(env));
+      return withCors(await getVacation(env), CORS_PUBLIC);
     }
     if (pathname === '/api/admin/login' && method === 'POST') {
-      return cors(await adminLogin(request, env));
+      return withCors(await adminLogin(request, env), CORS_ADMIN);
     }
     if (pathname === '/api/admin/vacation' && method === 'POST') {
-      return cors(await adminVacation(request, env));
+      return withCors(await adminVacation(request, env), CORS_ADMIN);
     }
 
     return env.ASSETS.fetch(request);
