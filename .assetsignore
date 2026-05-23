@@ -1,0 +1,15 @@
+.git
+.git/**
+.claude
+.claude/**
+.wrangler
+.wrangler/**
+node_modules
+node_modules/**
+References
+References/**
+worker.js
+wrangler.jsonc
+*.md
+.DS_Store
+**/.DS_Store

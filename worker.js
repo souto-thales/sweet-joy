@@ -3,6 +3,9 @@ export default {
     const { pathname } = new URL(request.url);
     const method = request.method;
 
+    if (pathname === '/api/health') {
+      return Response.json({ ok: true, worker: 'sweet-joy' });
+    }
     if (pathname === '/api/vacation' && method === 'GET') {
       return getVacation(env);
     }
