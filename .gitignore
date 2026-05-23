@@ -6,5 +6,3 @@ node_modules/
 *.log
 .env
 .env.local
-wrangler.jsonc
-worker.js

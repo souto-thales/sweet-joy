@@ -1,0 +1,21 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "sweet-joy",
+	"main": "worker.js",
+	"compatibility_date": "2026-04-26",
+	"observability": {
+		"enabled": true
+	},
+	"assets": {
+		"directory": "."
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"kv_namespaces": [
+		{
+			"binding": "VACATION_CONFIG",
+			"id": "24cc5fddfb594b85aa1dedea8ac6fad8"
+		}
+	]
+}
