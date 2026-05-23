@@ -39,6 +39,16 @@
       box-shadow: 0 4px 24px rgba(61,43,43,0.07);
     }
 
+    /* ---- LOGIN STATE ---- */
+    #loginView { display: flex; flex-direction: column; gap: 0; }
+    #loginView p {
+      font-size: 0.875rem;
+      color: #8a7070;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    /* ---- ADMIN STATE ---- */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -62,6 +72,7 @@
       margin-bottom: 1rem;
     }
 
+    /* ---- SHARED FORM ELEMENTS ---- */
     label {
       display: block;
       font-size: 0.75rem;
@@ -71,7 +82,9 @@
       margin-bottom: 0.4rem;
       color: var(--accent);
     }
-    input[type="date"], textarea {
+    input[type="date"],
+    input[type="password"],
+    textarea {
       width: 100%;
       padding: 0.7rem 0.9rem;
       border: 1.5px solid var(--border);
@@ -85,7 +98,9 @@
       transition: border-color 0.2s;
       -webkit-appearance: none;
     }
-    input[type="date"]:focus, textarea:focus { border-color: var(--primary); }
+    input[type="date"]:focus,
+    input[type="password"]:focus,
+    textarea:focus { border-color: var(--primary); }
     textarea { min-height: 90px; resize: vertical; line-height: 1.5; }
 
     .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0; }
@@ -93,8 +108,6 @@
     .date-row > div { display: flex; flex-direction: column; }
     .date-row > div label { margin-bottom: 0.4rem; }
     .date-row-wrap { margin-bottom: 1rem; }
-
-    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
     .btn {
       display: block;
@@ -119,6 +132,15 @@
       margin-top: 0.6rem;
     }
     .btn-outline:not(:disabled):hover { background: #fce8e6; }
+    .btn-ghost {
+      background: transparent;
+      color: #a08080;
+      font-size: 0.8rem;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border: none;
+    }
+    .btn-ghost:hover { color: var(--primary); }
 
     .toast {
       display: none;
@@ -131,6 +153,8 @@
     .toast.error   { background: #fce8e6; color: #b94037; display: block; }
 
     .helper { font-size: 0.78rem; color: #8a7070; margin-top: -0.6rem; margin-bottom: 1rem; }
+    .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .header-row .status-badge { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -139,10 +163,24 @@
 <h1>Admin Panel</h1>
 <p class="subtitle">Vacation &amp; Availability</p>
 
-<div class="card">
-  <div id="statusBadge" class="status-badge available">
-    <span class="status-dot"></span>
-    <span id="statusText">Loading…</span>
+<!-- LOGIN VIEW -->
+<div class="card" id="loginView">
+  <p class="section-title">Sign in</p>
+  <p>Enter the admin password to manage vacation settings.</p>
+  <label for="passwordInput">Password</label>
+  <input type="password" id="passwordInput" placeholder="Enter password" autocomplete="current-password" />
+  <button class="btn btn-primary" id="loginBtn" onclick="login()">Sign in</button>
+  <div class="toast" id="loginToast"></div>
+</div>
+
+<!-- ADMIN VIEW -->
+<div class="card" id="adminView" style="display:none">
+  <div class="header-row">
+    <div id="statusBadge" class="status-badge available">
+      <span class="status-dot"></span>
+      <span id="statusText">Loading…</span>
+    </div>
+    <button class="btn-ghost btn" onclick="logout()">Sign out</button>
   </div>
 
   <p class="section-title">Vacation Mode</p>
@@ -167,33 +205,88 @@
   <button class="btn btn-primary" id="saveBtn" onclick="saveVacation()">Enable Vacation Mode</button>
   <button class="btn btn-outline" id="disableBtn" onclick="disableVacation()" style="display:none">Disable Vacation Mode</button>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="adminToast"></div>
 </div>
 
 <script>
+  const TOKEN_KEY = 'sj.admin.token';
   let isActive = false;
 
-  async function load() {
+  // ---- AUTH ----
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function showLogin() {
+    document.getElementById('loginView').style.display = 'block';
+    document.getElementById('adminView').style.display = 'none';
+  }
+
+  function showAdmin() {
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('adminView').style.display = 'block';
+  }
+
+  async function login() {
+    const password = document.getElementById('passwordInput').value;
+    if (!password) return;
+
+    setLoading('loginBtn', true, 'Signing in…');
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast('loginToast', data.error || 'Invalid password.', 'error');
+        return;
+      }
+      localStorage.setItem(TOKEN_KEY, data.token);
+      document.getElementById('passwordInput').value = '';
+      showAdmin();
+      loadStatus();
+    } catch {
+      showToast('loginToast', 'Could not connect. Please try again.', 'error');
+    } finally {
+      setLoading('loginBtn', false, 'Sign in');
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem(TOKEN_KEY);
+    showLogin();
+  }
+
+  // Allow Enter key on password field
+  document.getElementById('passwordInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  // ---- VACATION STATUS ----
+
+  async function loadStatus() {
     try {
       const res = await fetch('/api/vacation');
       const data = await res.json();
       isActive = !!data.vacationMode;
       renderStatus(data);
     } catch {
-      showToast('Could not load current status. Check your connection.', 'error');
+      showToast('adminToast', 'Could not load current status.', 'error');
     }
   }
 
   function renderStatus(data) {
-    const badge  = document.getElementById('statusBadge');
-    const text   = document.getElementById('statusText');
+    const badge      = document.getElementById('statusBadge');
+    const text       = document.getElementById('statusText');
     const saveBtn    = document.getElementById('saveBtn');
     const disableBtn = document.getElementById('disableBtn');
 
     if (data.vacationMode) {
       badge.className = 'status-badge away';
-      const end = fmt(data.endDate);
-      text.textContent = `Away — back ${end}`;
+      text.textContent = `Away — back ${fmt(data.endDate)}`;
       document.getElementById('startDate').value = data.startDate || '';
       document.getElementById('endDate').value   = data.endDate   || '';
       document.getElementById('awayMsg').value   = data.message   || '';
@@ -212,22 +305,16 @@
     const end   = document.getElementById('endDate').value;
     const msg   = document.getElementById('awayMsg').value.trim();
 
-    if (!start || !end) return showToast('Please select both start and end dates.', 'error');
-    if (end < start)    return showToast('End date must be after start date.', 'error');
-    if (!msg)           return showToast('Please add a message for visitors.', 'error');
+    if (!start || !end) return showToast('adminToast', 'Please select both start and end dates.', 'error');
+    if (end < start)    return showToast('adminToast', 'End date must be after start date.', 'error');
+    if (!msg)           return showToast('adminToast', 'Please add a message for visitors.', 'error');
 
     setLoading('saveBtn', true, 'Saving…');
     try {
-      const res = await fetch('/api/admin/vacation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vacationMode: true, startDate: start, endDate: end, message: msg })
-      });
-      if (!res.ok) throw new Error();
-      showToast(`Vacation mode ON. Site will show the away notice from ${fmt(start)} to ${fmt(end)}.`, 'success');
-      await load();
-    } catch {
-      showToast('Something went wrong. Please try again.', 'error');
+      const ok = await postVacation({ vacationMode: true, startDate: start, endDate: end, message: msg });
+      if (!ok) return;
+      showToast('adminToast', `Vacation mode ON — site shows away notice from ${fmt(start)} to ${fmt(end)}.`, 'success');
+      await loadStatus();
     } finally {
       setLoading('saveBtn', false, isActive ? 'Update Dates' : 'Enable Vacation Mode');
     }
@@ -236,42 +323,68 @@
   async function disableVacation() {
     setLoading('disableBtn', true, 'Disabling…');
     try {
-      const res = await fetch('/api/admin/vacation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vacationMode: false })
-      });
-      if (!res.ok) throw new Error();
-      showToast('Vacation mode OFF. You\'re back to taking orders!', 'success');
-      await load();
-    } catch {
-      showToast('Something went wrong. Please try again.', 'error');
+      const ok = await postVacation({ vacationMode: false });
+      if (!ok) return;
+      showToast('adminToast', "Vacation mode OFF. You're back to taking orders!", 'success');
+      await loadStatus();
     } finally {
       setLoading('disableBtn', false, 'Disable Vacation Mode');
     }
   }
 
+  async function postVacation(body) {
+    try {
+      const res = await fetch('/api/admin/vacation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getToken()}`
+        },
+        body: JSON.stringify(body)
+      });
+      if (res.status === 401) {
+        logout();
+        return false;
+      }
+      if (!res.ok) throw new Error();
+      return true;
+    } catch {
+      showToast('adminToast', 'Something went wrong. Please try again.', 'error');
+      return false;
+    }
+  }
+
+  // ---- UTILS ----
+
   function fmt(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr + 'T00:00:00');
-    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
   }
 
   function setLoading(id, loading, label) {
     const btn = document.getElementById(id);
+    if (!btn) return;
     btn.disabled = loading;
     btn.textContent = label;
   }
 
-  function showToast(msg, type) {
-    const el = document.getElementById('toast');
+  function showToast(id, msg, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
     el.textContent = msg;
     el.className = `toast ${type}`;
     clearTimeout(el._t);
     el._t = setTimeout(() => { el.className = 'toast'; }, 6000);
   }
 
-  load();
+  // ---- INIT ----
+
+  if (getToken()) {
+    showAdmin();
+    loadStatus();
+  } else {
+    showLogin();
+  }
 </script>
 </body>
 </html>
