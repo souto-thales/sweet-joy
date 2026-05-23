@@ -212,7 +212,9 @@
   const TOKEN_KEY = 'sj.admin.token';
   let isActive = false;
 
-  const API = 'https://sweet-joy.thalessouto.workers.dev';
+  const API = window.location.hostname.includes('workers.dev')
+    ? ''
+    : 'https://sweet-joy.thalessouto.workers.dev';
 
   // ---- AUTH ----
 
@@ -250,7 +252,8 @@
       document.getElementById('passwordInput').value = '';
       showAdmin();
       loadStatus();
-    } catch {
+    } catch (e) {
+      console.error('[admin] login error:', e);
       showToast('loginToast', 'Could not connect. Please try again.', 'error');
     } finally {
       setLoading('loginBtn', false, 'Sign in');
