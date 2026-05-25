@@ -107,6 +107,7 @@ Typography: elegant script display + refined sans-serif. NO Inter, NO Roboto, NO
 - **Brevity:** Keep chat responses focused on "Task X complete."
 - **Bilingual:** Every text node must have `data-en` and `data-pt` attributes — no hardcoded strings without both languages.
 - **Mobile-first:** All CSS starts from mobile breakpoint up.
+- **Images:** Always have the user save photos directly as real JPEG files into `assets/images/`. Never copy from the Claude image cache and rename — cache files are often PNG regardless of extension, which breaks the carousel.
 
 ## 🎨 Design Rules
 - Aesthetic target: **Soft Luxury Editorial** — high-end patisserie feel.
