@@ -184,34 +184,63 @@ section { padding-block: var(--space-5); }
   .about-inner { grid-template-columns: 0.85fr 1.15fr; gap: var(--space-5); }
 }
 
-/* ===== BUILDER (How to Order) ===== */
-.builder { display: grid; grid-template-columns: 1fr; gap: var(--space-4); }
-.builder-steps { display: flex; flex-direction: column; gap: var(--space-4); }
-.builder-step-head { display: flex; align-items: center; gap: 0.9rem; margin-bottom: var(--space-2); }
-.step-num { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--color-primary); color: var(--color-white); font-family: var(--font-display); font-style: italic; font-size: 1.1rem; flex-shrink: 0; }
-.pill-grid { display: grid; gap: 0.6rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.pill-grid--dense { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-@media (min-width: 520px) {
-  .pill-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .pill-grid--dense { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* ===== CAKE FLOW (How to Order infographic) ===== */
+.cake-flow { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); align-items: stretch; }
+.cake-step { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.65rem; padding: var(--space-3) var(--space-2); flex: 1; }
+.cake-step-icon { width: 84px; height: 84px; border-radius: 50%; background: var(--color-white); border: 1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent); color: var(--color-primary); display: grid; place-items: center; box-shadow: var(--shadow-sm); transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.cake-step-icon svg { width: 46px; height: 46px; }
+.cake-step:hover .cake-step-icon { transform: translateY(-3px); border-color: var(--color-coral); color: var(--color-coral); }
+.cake-step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: var(--color-white); display: grid; place-items: center; font-family: var(--font-display); font-style: italic; font-size: 1.05rem; line-height: 1; }
+.cake-step-title { font-size: 1.05rem; margin: 0; line-height: 1.25; max-width: 14ch; }
+.cake-step-hint { font-size: 0.85rem; color: color-mix(in srgb, var(--color-accent) 65%, transparent); margin: 0; max-width: 22ch; line-height: 1.4; }
+.cake-step-hint a { color: var(--color-coral); font-weight: 600; text-decoration: none; }
+.cake-step-hint a:hover { color: var(--color-accent); }
+.cake-step--optional { position: relative; }
+.cake-step--optional .cake-step-icon { border-style: dashed; border-color: color-mix(in srgb, var(--color-coral) 50%, transparent); color: var(--color-coral); }
+.cake-step--optional .cake-step-num { background: color-mix(in srgb, var(--color-coral) 90%, var(--color-white)); }
+.cake-step-tag { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-coral); font-weight: 600; margin-bottom: -0.2rem; }
+/* Vertical arrows between steps (mobile) */
+.cake-flow .cake-step:not(:last-child)::after {
+  content: ""; display: block; width: 2px; height: 28px; background: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  position: absolute; bottom: calc(-1 * var(--space-3) / 2 - 14px); left: 50%; transform: translateX(-50%);
 }
-.pill { padding: 0.9rem 1rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent); border-radius: var(--radius-pill); background: var(--color-white); display: flex; flex-direction: column; gap: 0.15rem; text-align: center; transition: all var(--dur-fast) var(--ease); position: relative; cursor: pointer; }
-.pill strong { font-size: 1rem; }
-.pill span { font-size: 0.78rem; color: color-mix(in srgb, var(--color-accent) 60%, transparent); }
-.pill:hover:not(:disabled) { border-color: var(--color-coral); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-.pill.is-selected { background: var(--color-coral); border-color: var(--color-coral); color: var(--color-white); }
-.pill.is-selected span { color: color-mix(in srgb, var(--color-white) 85%, transparent); }
-.pill.is-selected::after { content: "✓"; position: absolute; top: 0.4rem; right: 0.7rem; font-size: 0.85rem; }
-.pill:disabled:not(.is-selected) { opacity: 0.4; cursor: not-allowed; }
-.builder-summary { background: var(--color-white); border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent); border-radius: var(--radius-md); padding: var(--space-3); display: flex; flex-direction: column; gap: 0.8rem; }
-.summary-list { display: flex; flex-direction: column; gap: 0.7rem; }
-.summary-list > div { display: grid; grid-template-columns: auto 1fr; gap: 0.8rem; border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 8%, transparent); padding-bottom: 0.4rem; }
-.summary-list dt { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-primary); }
-.summary-list dd { text-align: right; font-size: 0.95rem; }
-.summary-hint { font-size: 0.8rem; color: color-mix(in srgb, var(--color-accent) 55%, transparent); text-align: center; }
-@media (min-width: 900px) {
-  .builder { grid-template-columns: 1.6fr 1fr; align-items: start; }
-  .builder-summary { position: sticky; top: 88px; }
+.cake-flow .cake-step:not(:last-child)::before {
+  content: ""; position: absolute; bottom: calc(-1 * var(--space-3) / 2 - 14px); left: 50%; transform: translate(-50%, 8px) rotate(45deg);
+  width: 8px; height: 8px; border-right: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent); border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+@media (min-width: 760px) {
+  .cake-flow { flex-direction: row; align-items: flex-start; gap: 0; }
+  .cake-step { padding: var(--space-3) 0.5rem; }
+  /* Horizontal arrows on desktop */
+  .cake-flow .cake-step:not(:last-child)::after {
+    top: 42px; right: -8px; left: auto; bottom: auto; width: 36px; height: 2px; transform: none;
+  }
+  .cake-flow .cake-step:not(:last-child)::before {
+    top: 42px; right: -12px; left: auto; bottom: auto; transform: translateY(-3px) rotate(-45deg);
+    border-right: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent); border-bottom: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent); border-left: none; border-top: none;
+  }
+}
+.cake-guide-cta { margin-top: var(--space-4); display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.cake-guide-cta .btn-primary { padding: 1rem 2.2rem; font-size: 1.05rem; }
+.cake-guide-cta-hint { font-size: 0.85rem; color: color-mix(in srgb, var(--color-accent) 60%, transparent); margin: 0; text-align: center; }
+
+/* ===== SWEETS PICKER (multi-flavor order form) ===== */
+.sweets-picker { display: flex; flex-direction: column; gap: 0.7rem; }
+.sweets-rows { display: flex; flex-direction: column; gap: 0.6rem; }
+.sweets-row { display: grid; grid-template-columns: 1fr 110px auto; gap: 0.5rem; align-items: center; }
+.sweets-row select, .sweets-row input { width: 100%; padding: 0.7rem 0.8rem; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent); border-radius: 10px; background: var(--color-white); font: inherit; color: var(--color-accent); }
+.sweets-row select:focus, .sweets-row input:focus { outline: none; border-color: var(--color-coral); }
+.sweets-remove { width: 36px; height: 36px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent); background: var(--color-white); color: color-mix(in srgb, var(--color-accent) 70%, transparent); font-size: 1.3rem; line-height: 1; cursor: pointer; transition: all var(--dur-fast) var(--ease); }
+.sweets-remove:hover { border-color: var(--color-coral); color: var(--color-coral); background: color-mix(in srgb, var(--color-coral) 8%, transparent); }
+.sweets-add { align-self: flex-start; font-size: 0.92rem; }
+.sweets-picker .field-hint { font-size: 0.8rem; color: color-mix(in srgb, var(--color-accent) 60%, transparent); margin: 0.2rem 0 0; }
+.sweets-picker .field-error { display: none; color: var(--color-coral); font-size: 0.85rem; margin: 0.2rem 0 0; }
+.sweets-picker.is-invalid .field-error { display: block; }
+@media (max-width: 480px) {
+  .sweets-row { grid-template-columns: 1fr auto; grid-template-areas: "flavor remove" "qty qty"; }
+  .sweets-row-flavor { grid-area: flavor; }
+  .sweets-row-qty { grid-area: qty; }
+  .sweets-remove { grid-area: remove; }
 }
 
 /* ===== DOCINHOS GRID ===== */

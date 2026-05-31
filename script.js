@@ -22,78 +22,128 @@
     { en: "Chocolate Cups w/ Filling",             pt: "Copinhos de chocolate com recheio",      price: 100, img: "assets/images/gourmet sweets/chocolate-cups.jpg" }
   ];
 
-  // ---------- ORDER BUILDER ----------
-  const orderBuilder = (() => {
-    const state = { size: null, batter: null, fillings: [] };
+  // ---------- SWEET TREATS PICKER ----------
+  const sweetTreatsPicker = (() => {
+    function escapeAttr(s) { return String(s).replace(/"/g, "&quot;"); }
+    function tr(en, pt) { return document.documentElement.lang === "pt" ? pt : en; }
 
-    function updateSummary() {
+    function getPicker() { return document.getElementById("sweetsPicker"); }
+    function getRowsContainer() { const p = getPicker(); return p ? p.querySelector("[data-sweets-rows]") : null; }
+    function getHiddenInput() { return document.getElementById("f-docinhos-selection"); }
+
+    function flavorOptions(selected) {
       const lang = document.documentElement.lang;
-      const sz = document.getElementById("sumSize");
-      const bt = document.getElementById("sumBatter");
-      const fl = document.getElementById("sumFillings");
-      if (sz) sz.textContent = state.size ? state.size : "—";
-      if (bt) {
-        if (state.batter) {
-          bt.textContent = lang === "pt" && state.batter === "Vanilla" ? "Baunilha" : state.batter;
-        } else {
-          bt.textContent = "—";
-        }
-      }
-      if (fl) fl.textContent = state.fillings.length ? state.fillings.join(", ") : "—";
-      const btn = document.getElementById("buildMyOrderBtn");
-      if (btn) btn.disabled = !(state.size && state.batter && state.fillings.length === 2);
+      const placeholder = tr("Choose a flavor…", "Escolha um sabor…");
+      let html = `<option value="">${placeholder}</option>`;
+      DOCINHOS.forEach(d => {
+        const label = lang === "pt" ? d.pt : d.en;
+        const sel = selected === d.en ? " selected" : "";
+        html += `<option value="${escapeAttr(d.en)}" data-en="${escapeAttr(d.en)}" data-pt="${escapeAttr(d.pt)}"${sel}>${label} · $${d.price}/100</option>`;
+      });
+      return html;
+    }
+
+    function addRow(prefillFlavor) {
+      const rows = getRowsContainer();
+      if (!rows) return;
+      const row = document.createElement("div");
+      row.className = "sweets-row";
+      row.innerHTML = `
+        <div class="sweets-row-flavor">
+          <select class="sweets-flavor" aria-label="${escapeAttr(tr("Flavor", "Sabor"))}">${flavorOptions(prefillFlavor)}</select>
+        </div>
+        <div class="sweets-row-qty">
+          <input type="number" class="sweets-qty" min="30" step="10" placeholder="30" inputmode="numeric" aria-label="${escapeAttr(tr("Quantity (min 30)", "Quantidade (mín 30)"))}" />
+        </div>
+        <button type="button" class="sweets-remove" aria-label="${escapeAttr(tr("Remove flavor", "Remover sabor"))}">×</button>
+      `;
+      rows.appendChild(row);
+      sync();
+    }
+
+    function removeRow(rowEl) {
+      rowEl.remove();
+      if (!getRowsContainer().children.length) addRow();
+      sync();
+    }
+
+    function sync() {
+      const hidden = getHiddenInput();
+      if (!hidden) return;
+      const items = readRows().filter(r => r.flavor && r.qty >= 30);
+      hidden.value = items.map(r => `${r.flavor} × ${r.qty}`).join("; ");
+    }
+
+    function readRows() {
+      const rows = getRowsContainer();
+      if (!rows) return [];
+      return Array.from(rows.querySelectorAll(".sweets-row")).map(row => ({
+        el: row,
+        flavor: row.querySelector(".sweets-flavor").value,
+        qty: parseInt(row.querySelector(".sweets-qty").value, 10) || 0
+      }));
+    }
+
+    function validate() {
+      const picker = getPicker();
+      if (!picker) return true;
+      const data = readRows();
+      const valid = data.length > 0 && data.every(r => r.flavor && r.qty >= 30);
+      picker.classList.toggle("is-invalid", !valid);
+      return valid;
+    }
+
+    function reset() {
+      const rows = getRowsContainer();
+      if (!rows) return;
+      rows.innerHTML = "";
+      addRow();
+      const hidden = getHiddenInput();
+      if (hidden) hidden.value = "";
+      const picker = getPicker();
+      if (picker) picker.classList.remove("is-invalid");
     }
 
     function bind() {
-      document.querySelectorAll(".pill-grid").forEach(grid => {
-        const field = grid.dataset.field;
-        const multi = parseInt(grid.dataset.multi || "0", 10);
-
-        grid.addEventListener("click", e => {
-          const pill = e.target.closest(".pill");
-          if (!pill || (pill.disabled && !pill.classList.contains("is-selected"))) return;
-
-          if (multi > 0) {
-            const isSelected = pill.classList.toggle("is-selected");
-            const val = pill.dataset.value;
-            if (isSelected) {
-              state.fillings.push(val);
-            } else {
-              state.fillings = state.fillings.filter(v => v !== val);
-            }
-            grid.querySelectorAll(".pill").forEach(p => {
-              if (!p.classList.contains("is-selected")) {
-                p.disabled = state.fillings.length >= multi;
-              }
-            });
-          } else {
-            grid.querySelectorAll(".pill").forEach(p => p.classList.remove("is-selected"));
-            pill.classList.add("is-selected");
-            state[field] = pill.dataset.value;
-          }
-          updateSummary();
-        });
+      const picker = getPicker();
+      if (!picker) return;
+      addRow();
+      picker.addEventListener("click", e => {
+        if (e.target.closest("[data-add-flavor]")) { addRow(); return; }
+        const rm = e.target.closest(".sweets-remove");
+        if (rm) removeRow(rm.closest(".sweets-row"));
       });
-
-      const buildBtn = document.getElementById("buildMyOrderBtn");
-      if (buildBtn) {
-        buildBtn.addEventListener("click", () => {
-          window.dispatchEvent(new CustomEvent("order:prefill", {
-            detail: {
-              source: "builder",
-              size: state.size || "",
-              batter: state.batter,
-              fillings: [...state.fillings],
-              product: "Custom Cake"
-            }
-          }));
-          const form = document.getElementById("order-form");
-          if (form) form.scrollIntoView({ behavior: "smooth", block: "start" });
-        });
-      }
+      picker.addEventListener("change", sync);
+      picker.addEventListener("input", sync);
     }
 
-    return { bind, state };
+    function addFlavor(name) {
+      const rows = getRowsContainer();
+      if (!rows) return;
+      const data = readRows();
+      const empty = data.find(r => !r.flavor);
+      if (empty) {
+        empty.el.querySelector(".sweets-flavor").value = name;
+      } else {
+        addRow(name);
+      }
+      sync();
+    }
+
+    function relocalize() {
+      const lang = document.documentElement.lang;
+      document.querySelectorAll(".sweets-flavor").forEach(sel => {
+        const current = sel.value;
+        const placeholder = tr("Choose a flavor…", "Escolha um sabor…");
+        sel.innerHTML = `<option value="">${placeholder}</option>` + DOCINHOS.map(d => {
+          const label = lang === "pt" ? d.pt : d.en;
+          const s = current === d.en ? " selected" : "";
+          return `<option value="${escapeAttr(d.en)}"${s}>${label} · $${d.price}/100</option>`;
+        }).join("");
+      });
+    }
+
+    return { bind, validate, reset, addFlavor, relocalize };
   })();
 
   // ---------- DOCINHOS GRID ----------
@@ -190,6 +240,14 @@
       const interest = f.elements["product_interest"];
       if (!interest || !interest.value) { interest && interest.closest(".field").classList.add("field--error"); ok = false; }
 
+      if (interest && (interest.value === "Gourmet Sweets" || interest.value === "Both")) {
+        if (!sweetTreatsPicker.validate()) {
+          const picker = document.getElementById("sweetsPicker");
+          if (picker) picker.closest(".field").classList.add("field--error");
+          ok = false;
+        }
+      }
+
       return ok;
     }
 
@@ -216,7 +274,7 @@
         data.cake_size ? `Tamanho: ${data.cake_size}` : null,
         data.batter_flavor ? `Massa: ${data.batter_flavor}` : null,
         data.fillings && data.fillings.length ? `Recheios: ${data.fillings.join(", ")}` : null,
-        data.docinhos_qty ? `Quantidade de docinhos: ${data.docinhos_qty}` : null,
+        data.docinhos_selection ? `Docinhos: ${data.docinhos_selection}` : null,
         data.special_requests ? `Observações: ${data.special_requests}` : null,
       ] : [
         "Hi Vanessa! New order from the Sweet & Joy website:",
@@ -229,7 +287,7 @@
         data.cake_size ? `Cake size: ${data.cake_size}` : null,
         data.batter_flavor ? `Batter: ${data.batter_flavor}` : null,
         data.fillings && data.fillings.length ? `Fillings: ${data.fillings.join(", ")}` : null,
-        data.docinhos_qty ? `Docinhos quantity: ${data.docinhos_qty}` : null,
+        data.docinhos_selection ? `Sweet treats: ${data.docinhos_selection}` : null,
         data.special_requests ? `Notes: ${data.special_requests}` : null,
       ];
       const msg = lines.filter(Boolean).join("\n");
@@ -256,7 +314,9 @@
         const grid = f.querySelector(".checkbox-grid");
         if (grid) grid.dispatchEvent(new Event("change", { bubbles: true }));
       }
-      if (detail.note) {
+      if (detail.note && detail.source === "card" && detail.product === "Gourmet Sweets") {
+        sweetTreatsPicker.addFlavor(detail.note);
+      } else if (detail.note) {
         const notes = f.elements["special_requests"];
         if (notes) {
           const prefix = detail.source === "card" ? `Interested in: ${detail.note}\n` : "";
@@ -299,6 +359,7 @@
           `Obrigada! Seu pedido já está na caixa da Vanessa. <a class="wa-confirm-btn" href="${waUrl}" target="_blank" rel="noopener">💬 Confirmar pelo WhatsApp</a>`
         );
         getForm().reset();
+        sweetTreatsPicker.reset();
         showConditionals();
         statusEl.scrollIntoView({ behavior: "smooth", block: "center" });
       } catch (err) {
@@ -345,7 +406,7 @@
   // ---------- SCROLL REVEAL ----------
   const scrollReveal = (() => {
     function init() {
-      document.querySelectorAll("section > .container, .drip-divider, .product-card, .builder-step").forEach(el => {
+      document.querySelectorAll("section > .container, .drip-divider, .product-card, .cake-step").forEach(el => {
         el.classList.add("reveal");
       });
 
@@ -405,6 +466,8 @@
       const next = document.documentElement.lang === "pt" ? "en" : "pt";
       localStorage.setItem(STORAGE_KEY, next);
       applyLang(next);
+      sweetTreatsPicker.relocalize();
+      docinhosGrid.render();
     }
 
     function init() {
@@ -569,8 +632,8 @@
   document.addEventListener("DOMContentLoaded", () => {
     i18n.init();
     dripDivider.inject();
-    orderBuilder.bind();
     docinhosGrid.render();
+    sweetTreatsPicker.bind();
     formHandler.bind();
     heroCarousel.init();
     scrollReveal.init();

@@ -25,6 +25,8 @@ Static bilingual (EN/PT-BR) website for **Sweet & Joy by Vanessa Sulevis** — a
 
 **After any Worker code change:** run `npx wrangler deploy` from the project root. If the ADMIN_PASSWORD secret is ever lost (e.g. after a redeploy), restore it with: `echo "Vanessa1@" | npx wrangler secret put ADMIN_PASSWORD`
 
+**workers.dev doubles as preview/staging:** `wrangler.jsonc` has `assets: { directory: "." }`, so `npx wrangler deploy` pushes the *entire site* (HTML/CSS/JS/images) to `sweet-joy.thalessouto.workers.dev`, not just the API. Useful when Marcos's Pages build is stuck or to preview changes before they hit production. The Worker upload is fast (uploads only changed files).
+
 ## Vacation Mode System
 
 Vanessa's self-service portal to announce absences. All state stored in Cloudflare KV.
@@ -132,8 +134,8 @@ Typography: elegant script display + refined sans-serif. NO Inter, NO Roboto, NO
 - [x] About section (founder.jpg)
 - [x] Cakes portfolio section
 - [x] Docinhos grid — 17 flavors, JS-rendered, real photos
-- [x] How to Order interactive flow (JS state machine)
-- [x] Order form — Web3Forms, validation, file upload for design references
+- [x] How to Order — process-flow infographic (4 steps: Size → Batter → Fillings → Optional Sweets) with SVG icons + CTA scrolling to order form
+- [x] Order form — Web3Forms, validation, multi-flavor Sweet Treats picker (per-flavor min 30, hidden `docinhos_selection` consolidates rows for email/WhatsApp), file upload for design references
 - [x] Real Google reviews (Yuka Wakabayashi, Luciane Azevedo, Isabela Trimentose)
 - [x] Instagram feed (Behold.so embed)
 - [x] FAQ section
