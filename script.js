@@ -228,12 +228,35 @@
 
       const date = f.elements["event_date"];
       if (date) {
+        const errEl = date.parentElement.querySelector(".field-error");
+        const lang = document.documentElement.lang;
+        const defaultMsg = lang === "pt"
+          ? "Escolha uma data com pelo menos 5 dias de antecedência."
+          : "Please pick a date at least 5 days from today.";
+        if (errEl) errEl.textContent = defaultMsg;
+
         if (!date.value) {
           date.closest(".field").classList.add("field--error"); ok = false;
         } else {
           const picked = new Date(date.value + "T00:00:00");
           const minDate = new Date(); minDate.setHours(0, 0, 0, 0); minDate.setDate(minDate.getDate() + 5);
-          if (picked < minDate) { date.closest(".field").classList.add("field--error"); ok = false; }
+          if (picked < minDate) {
+            date.closest(".field").classList.add("field--error"); ok = false;
+          } else {
+            const vs = vacationMode.getState();
+            if (vs && date.value >= vs.startDate && date.value <= vs.endDate) {
+              const locale = lang === "pt" ? "pt-BR" : "en-US";
+              const opts = { month: "long", day: "numeric" };
+              const startFmt = new Date(vs.startDate + "T00:00:00").toLocaleDateString(locale, opts);
+              const endFmt = new Date(vs.endDate + "T00:00:00").toLocaleDateString(locale, opts);
+              const after = new Date(vs.endDate + "T00:00:00"); after.setDate(after.getDate() + 1);
+              const afterFmt = after.toLocaleDateString(locale, opts);
+              if (errEl) errEl.textContent = lang === "pt"
+                ? `Estarei de férias de ${startFmt} a ${endFmt}. Escolha uma data a partir de ${afterFmt}.`
+                : `I'm away ${startFmt}–${endFmt}. Please pick a date from ${afterFmt} onward.`;
+              date.closest(".field").classList.add("field--error"); ok = false;
+            }
+          }
         }
       }
 
@@ -571,8 +594,17 @@
 
   // ---------- VACATION MODE ----------
   const vacationMode = (() => {
-    function fmtDate(dateStr) {
-      return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    let state = null;
+
+    function fmtDate(dateStr, lang) {
+      const locale = lang === "pt" ? "pt-BR" : "en-US";
+      return new Date(dateStr + "T00:00:00").toLocaleDateString(locale, { month: "long", day: "numeric" });
+    }
+
+    function dayAfter(dateStr) {
+      const d = new Date(dateStr + "T00:00:00");
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().split("T")[0];
     }
 
     async function init() {
@@ -585,10 +617,13 @@
         if (today > data.endDate) return;
 
         const lang = document.documentElement.lang;
-        const startFmt = fmtDate(data.startDate);
-        const endFmt = fmtDate(data.endDate);
+        const startFmt = fmtDate(data.startDate, lang);
+        const endFmt = fmtDate(data.endDate, lang);
+        const dayAfterFmt = fmtDate(dayAfter(data.endDate), lang);
         const daysUntil = Math.ceil((new Date(data.startDate + "T00:00:00") - new Date(today + "T00:00:00")) / 86400000);
         const isAway = today >= data.startDate;
+
+        state = { startDate: data.startDate, endDate: data.endDate, isAway };
 
         const banner = document.getElementById("vacation-banner");
         const bannerMsg = document.getElementById("vacation-banner-msg");
@@ -602,9 +637,9 @@
               ? `Atenção: estarei de férias de ${startFmt} a ${endFmt}. Faça seu pedido antes!`
               : `Heads up: I'll be on vacation from ${startFmt} to ${endFmt}. Place your order before then!`;
           } else {
-            return;
+            banner.hidden = true;
           }
-          banner.hidden = false;
+          if (isAway || daysUntil <= 10) banner.hidden = false;
         }
 
         const form = document.querySelector("#order-form form");
@@ -613,11 +648,11 @@
           notice.className = "vacation-form-notice";
           notice.textContent = isAway
             ? (lang === "pt"
-                ? `Estou de férias até ${endFmt}. Você ainda pode enviar sua mensagem — retornarei assim que voltar!`
-                : `I'm on vacation until ${endFmt}. You can still send your request — I'll reply as soon as I'm back!`)
+                ? `Estou de férias até ${endFmt}. Não aceito pedidos para eventos entre ${startFmt} e ${endFmt} — escolha uma data a partir de ${dayAfterFmt}.`
+                : `I'm out of office until ${endFmt}. Orders for events between ${startFmt} and ${endFmt} can't be accepted — please pick a date from ${dayAfterFmt} onward.`)
             : (lang === "pt"
-                ? `Estarei de férias de ${startFmt} a ${endFmt}. Pedidos feitos agora serão respondidos após meu retorno.`
-                : `I'll be on vacation from ${startFmt} to ${endFmt}. Orders placed now will be answered after I return.`);
+                ? `Estarei de férias de ${startFmt} a ${endFmt}. Você pode fazer pedidos para datas a partir de ${dayAfterFmt}.`
+                : `I'll be away ${startFmt}–${endFmt}. You can book ahead — please pick an event date from ${dayAfterFmt} onward.`);
           form.prepend(notice);
         }
       } catch {
@@ -625,7 +660,7 @@
       }
     }
 
-    return { init };
+    return { init, getState: () => state };
   })();
 
   // ---------- INIT ----------
