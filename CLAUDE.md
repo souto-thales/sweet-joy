@@ -7,25 +7,29 @@ Static bilingual (EN/PT-BR) website for **Sweet & Joy by Vanessa Sulevis** — a
 - **Frontend:** Vanilla HTML + CSS + JS (no frameworks)
 - **Form backend:** Web3Forms (key: `5de06771-2e3a-4aa5-9f1a-094124a0595f`)
 - **Instagram feed:** Behold.so widget (feed-id: `X3KV2gcvdmljs6adDASa`)
-- **Static hosting:** Cloudflare Pages via MarcosSulevis/sweet-joy (auto-deploy on push)
+- **Static hosting:** Cloudflare Workers Builds via MarcosSulevis/sweet-joy (auto-deploy on push, assets-only)
 - **API Worker:** Cloudflare Worker in Thales's account — `sweet-joy.thalessouto.workers.dev`
 - **Live URL:** https://sweetjoycakes.com
 - **Fonts:** Google Fonts only (Cormorant Garamond + Outfit + Style Script)
 
 ## Architecture — Two Cloudflare Accounts
 
-**Critical:** sweetjoycakes.com is served by **Marcos's Cloudflare account** (Cloudflare Pages). The API Worker is in **Thales's Cloudflare account** (account ID: `ea0d7ce79a23434ad8f14cd6901199cc`).
+**Critical:** sweetjoycakes.com is served by a Worker on **Marcos's Cloudflare account** (Workers Builds, assets-only). The API Worker is in **Thales's Cloudflare account** (account ID: `ea0d7ce79a23434ad8f14cd6901199cc`).
 
 | Layer | Account | URL | Deploy |
 |---|---|---|---|
-| Static site (HTML/CSS/JS) | Marcos | sweetjoycakes.com | Auto via git push |
-| API Worker | Thales | sweet-joy.thalessouto.workers.dev | Manual: `npx wrangler deploy` |
+| Static site (HTML/CSS/JS) | Marcos | sweetjoycakes.com | Auto via git push (uses `wrangler.public.jsonc`) |
+| API Worker | Thales | sweet-joy.thalessouto.workers.dev | Manual: `npx wrangler deploy` (uses `wrangler.jsonc`) |
 
-**Never remove `worker.js` or `wrangler.jsonc` from git** — Marcos's Cloudflare GitHub integration detects them and tries to build; if removed, it deploys an empty Worker that breaks the API. Always keep them committed so the build fails gracefully (preserving the last good static deployment) rather than deploying a broken empty Worker.
+**Two wrangler configs, on purpose:**
+- `wrangler.jsonc` — full Worker config (KV binding, `worker.js` API routes). Used by Thales's manual deploys to his account.
+- `wrangler.public.jsonc` — assets-only (no KV, no Worker script). Used by Marcos's Worker Builds deploy command: `npx wrangler deploy --config wrangler.public.jsonc`. Non-production branch command: `npx wrangler versions upload --config wrangler.public.jsonc`.
+
+**Never remove `worker.js`, `wrangler.jsonc`, or `wrangler.public.jsonc` from git** — removing `wrangler.public.jsonc` breaks Marcos's auto-deploy; removing `worker.js`/`wrangler.jsonc` breaks Thales's manual deploys.
 
 **After any Worker code change:** run `npx wrangler deploy` from the project root. If the ADMIN_PASSWORD secret is ever lost (e.g. after a redeploy), restore it with: `echo "Vanessa1@" | npx wrangler secret put ADMIN_PASSWORD`
 
-**workers.dev doubles as preview/staging:** `wrangler.jsonc` has `assets: { directory: "." }`, so `npx wrangler deploy` pushes the *entire site* (HTML/CSS/JS/images) to `sweet-joy.thalessouto.workers.dev`, not just the API. Useful when Marcos's Pages build is stuck or to preview changes before they hit production. The Worker upload is fast (uploads only changed files).
+**workers.dev doubles as preview/staging:** `wrangler.jsonc` has `assets: { directory: "." }`, so `npx wrangler deploy` pushes the *entire site* (HTML/CSS/JS/images) to `sweet-joy.thalessouto.workers.dev`, not just the API. Useful to preview changes before they hit production. The Worker upload is fast (uploads only changed files). Requires fresh wrangler auth (`npx wrangler login`) if token expired.
 
 ## Vacation Mode System
 
@@ -46,7 +50,7 @@ Vanessa's self-service portal to announce absences. All state stored in Cloudfla
    - **≤10 days before start** → "Heads up" preview banner
    - **During vacation** → "I'm away" banner + notice prepended to order form
    - **After end date** → no banner
-4. Order form still accepts submissions during vacation (Vanessa replies on return)
+4. Order form blocks any event_date inside the vacation window — inline bilingual error directs the customer to pick a date from `endDate + 1` onward. Pre- and post-vacation dates still submit normally (5-day minimum lead time still enforced).
 
 **Worker API routes (`worker.js`):**
 - `GET  /api/health` — health check
@@ -59,7 +63,7 @@ Vanessa's self-service portal to announce absences. All state stored in Cloudfla
 ## Git Setup
 Two remotes, single push:
 - `origin` → souto-thales/sweet-joy (source of truth)
-- `origin` push also goes to → MarcosSulevis/sweet-joy (Cloudflare Pages deploy target)
+- `origin` push also goes to → MarcosSulevis/sweet-joy (Cloudflare Worker Builds deploy target)
 - `git push` deploys to both automatically
 
 ## File Structure
@@ -72,9 +76,10 @@ Two remotes, single push:
 ├── style.css
 ├── script.js
 ├── worker.js           ← Cloudflare Worker (API routes + static asset fallback)
-├── wrangler.jsonc      ← Worker config (deploy manually, keep in git)
+├── wrangler.jsonc      ← Full Worker config (Thales's manual deploy — KV + worker.js)
+├── wrangler.public.jsonc ← Assets-only config (Marcos's auto-deploy — no KV, no worker.js)
 ├── sitemap.xml
-├── _headers            ← Cloudflare Pages security headers
+├── _headers            ← Security headers
 ├── .assetsignore       ← Excludes worker/config files from being served as assets
 └── assets/
     └── images/
@@ -142,8 +147,8 @@ Typography: elegant script display + refined sans-serif. NO Inter, NO Roboto, NO
 - [x] Language toggle EN/PT-BR (localStorage)
 - [x] WhatsApp float button + Back to Top
 - [x] SEO: canonical URL, sitemap.xml, JSON-LD, OG/Twitter tags (cake photo)
-- [x] Deployed — Cloudflare Pages auto-deploys from MarcosSulevis/sweet-joy
-- [x] Vacation mode — admin portal + banner + form notice + 10-day preview
+- [x] Deployed — Cloudflare Workers Builds auto-deploys from MarcosSulevis/sweet-joy (assets-only via `wrangler.public.jsonc`)
+- [x] Vacation mode — admin portal + banner + form notice + 10-day preview + event-date order block during vacation window
 
 ### Pending (requires Vanessa's action)
 - [ ] **Google Business Profile GPS** — registered coordinates are in the Pacific Ocean; fix by editing location pin at business.google.com → the Google Maps embed on the site will auto-correct once saved
