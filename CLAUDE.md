@@ -66,6 +66,8 @@ Two remotes, single push:
 - `origin` push also goes to → MarcosSulevis/sweet-joy (Cloudflare Worker Builds deploy target)
 - `git push` deploys to both automatically
 
+**`.github/workflows/sync-fork.yml`** — guarded with `if: github.repository == 'souto-thales/sweet-joy'` so it only runs on the source-of-truth repo. Without the guard, it also runs on Marcos's fork and fails (missing `MARCOS_SYNC_TOKEN` secret), sending spurious failure emails. Keep the guard if you ever edit this file.
+
 ## File Structure
 ```
 /
