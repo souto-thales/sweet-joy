@@ -231,15 +231,15 @@
         const errEl = date.parentElement.querySelector(".field-error");
         const lang = document.documentElement.lang;
         const defaultMsg = lang === "pt"
-          ? "Escolha uma data com pelo menos 5 dias de antecedência."
-          : "Please pick a date at least 5 days from today.";
+          ? "Escolha uma data com pelo menos 1 dia de antecedência."
+          : "Please pick a date at least 1 day from today.";
         if (errEl) errEl.textContent = defaultMsg;
 
         if (!date.value) {
           date.closest(".field").classList.add("field--error"); ok = false;
         } else {
           const picked = new Date(date.value + "T00:00:00");
-          const minDate = new Date(); minDate.setHours(0, 0, 0, 0); minDate.setDate(minDate.getDate() + 5);
+          const minDate = new Date(); minDate.setHours(0, 0, 0, 0); minDate.setDate(minDate.getDate() + 1);
           if (picked < minDate) {
             date.closest(".field").classList.add("field--error"); ok = false;
           } else {

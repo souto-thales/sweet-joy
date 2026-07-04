@@ -59,6 +59,7 @@ h3 { font-size: clamp(1.25rem, 1vw + 1rem, 1.75rem); }
 .eyebrow { font-family: var(--font-body); font-size: 0.8rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-primary); margin-bottom: var(--space-2); }
 .section-title { margin-bottom: var(--space-2); }
 .section-sub { color: color-mix(in srgb, var(--color-accent) 70%, transparent); max-width: 52ch; margin: 0 auto; }
+.section-sub--fine { font-size: 0.85rem; opacity: 0.8; margin-top: 0.35rem; }
 
 /* ===== LAYOUT ===== */
 .container { width: 100%; max-width: var(--max-width); margin-inline: auto; padding-inline: var(--space-3); }
